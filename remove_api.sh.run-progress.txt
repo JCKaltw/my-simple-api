@@ -1,10 +1,10 @@
 CLEANUP_COMPLETED: Cleanup completed successfully.
-CLEANUP_COMPLETED: Cleanup completed successfully.
-CLEANUP_COMPLETED: Cleanup completed successfully.
-CLEANUP_COMPLETED: Cleanup completed successfully.
-CLEANUP_COMPLETED: Cleanup completed successfully.
-CLEANUP_COMPLETED: Cleanup completed successfully.
-CLEANUP_COMPLETED: Cleanup completed successfully.
+DELETED_API_MAPPING: API mapping deleted successfully.
+DELETED_DOMAIN_NAME: Domain name deleted successfully.
+DELETED_STAGE: Stage deleted successfully.
+DELETED_ROUTE: Route deleted successfully.
+DELETED_INTEGRATION: Integration deleted successfully.
+DELETED_API: HTTP API deleted successfully.
 DELETED_LAMBDA: Lambda function deleted successfully.
 DETACHED_POLICY: Policy detached successfully.
 DELETED_ROLE: IAM role deleted successfully.
