@@ -153,7 +153,7 @@ else
   record_progress "CLEANUP_COMPLETED: Cleanup completed successfully."
 
   # Clean up temporary files
-  rm -f role.json lambda.json api.json integration.json route.json stage.json domain_name.json api_mapping.json
+  # rm -f role.json lambda.json api.json integration.json route.json stage.json domain_name.json api_mapping.json
 
   echo "Cleanup completed successfully."
 fi

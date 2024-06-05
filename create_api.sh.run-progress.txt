@@ -5,3 +5,6 @@ CREATED_API: HTTP API created successfully.
 CREATED_INTEGRATION: Integration created successfully.
 CREATED_ROUTE: Route created successfully.
 CREATED_STAGE: Stage created successfully.
+CREATED_DOMAIN_NAME: Domain name created successfully.
+CREATED_API_MAPPING: API mapping created successfully.
+COMPLETED: API Gateway endpoint created successfully.
