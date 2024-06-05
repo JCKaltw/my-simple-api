@@ -1,0 +1,7 @@
+CREATED_ROLE: IAM role created successfully.
+ATTACHED_POLICY: Policy attached successfully.
+CREATED_LAMBDA: Lambda function created successfully.
+CREATED_API: HTTP API created successfully.
+CREATED_INTEGRATION: Integration created successfully.
+CREATED_ROUTE: Route created successfully.
+CREATED_STAGE: Stage created successfully.
