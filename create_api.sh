@@ -93,9 +93,27 @@ api_domain_name=$(jq -r '.DomainName' api_mapping.json)
 
 # Create Route53 record
 hosted_zone_id=$(aws route53 list-hosted-zones --query "HostedZones[?Name=='${domain_name}. '].Id" --output text)
-echo '{"Changes":[{"Action":"CREATE","ResourceRecordSet":{"Name":"pges2api.'${domain_name}'","Type":"CNAME","TTL":300,"ResourceRecords":[{"Value":"'${api_domain_name}'"}]}}]}' > change_batch.json
+change_batch=$(cat << EOF
+{
+  "Changes": [
+    {
+      "Action": "CREATE",
+      "ResourceRecordSet": {
+        "Name": "pges2api.${domain_name}",
+        "Type": "CNAME",
+        "TTL": 300,
+        "ResourceRecords": [
+          {
+            "Value": "${api_domain_name}"
+          }
+        ]
+      }
+    }
+  ]
+}
+EOF
+)
 
-echo "Running: aws route53 change-resource-record-sets --hosted-zone-id $hosted_zone_id --change-batch file://change_batch.json"
-execute_aws_cli route53_record.json route53 change-resource-record-sets --hosted-zone-id "$hosted_zone_id" --change-batch file://change_batch.json --tags Key=Project,Value=my-simple-api || { record_progress "ABORT: Failed to create Route53 record."; exit 1; }
+echo "Running: aws route53 change-resource-record-sets --hosted-zone-id $hosted_zone_id --change-batch '$change_batch'"
+execute_aws_cli route53_record.json route53 change-resource-record-sets --hosted-zone-id "$hosted_zone_id" --change-batch "$change_batch" --tags Key=Project,Value=my-simple-api || { record_progress "ABORT: Failed to create Route53 record."; exit 1; }
 record_progress "CREATED_ROUTE53_RECORD: Route53 record created successfully."
-rm change_batch.json
