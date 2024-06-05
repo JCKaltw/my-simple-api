@@ -18,7 +18,7 @@ record_progress() {
 }
 
 echo "Creating IAM role for Lambda function..."
-execute_aws_cli role.json iam create-role --role-name my-lambda-role --assume-role-policy-document '{"Version": "2012-10-17","Statement": [{ "Effect": "Allow", "Principal": {"Service": "lambda.amazonaws.com"}, "Action": "sts:AssumeRole"}]}' || { record_progress "ABORT: Failed to create IAM role."; exit 1; }
+execute_aws_cli role.json iam create-role --role-name my-lambda-role --assume-role-policy-document '{"Version": "2012-10-17","Statement": [{ "Effect": "Allow", "Principal": {"Service": "lambda.amazonaws.com"}, "Action": "sts:AssumeRole"}]}' --tags Key=Project,Value=my-simple-api || { record_progress "ABORT: Failed to create IAM role."; exit 1; }
 record_progress "CREATED_ROLE: IAM role created successfully."
 
 echo "Waiting for IAM role propagation..."
@@ -32,14 +32,14 @@ echo "Waiting for policy attachment propagation..."
 sleep 5
 
 echo "Creating Lambda function..."
-execute_aws_cli lambda.json lambda create-function --function-name my-lambda-function --runtime nodejs20.x --handler index.handler --role $(jq -r '.Role.Arn' role.json) --zip-file fileb://lambda_function.zip || { record_progress "ABORT: Failed to create Lambda function."; exit 1; }
+execute_aws_cli lambda.json lambda create-function --function-name my-lambda-function --runtime nodejs20.x --handler index.handler --role $(jq -r '.Role.Arn' role.json) --zip-file fileb://lambda_function.zip --tags Key=Project,Value=my-simple-api || { record_progress "ABORT: Failed to create Lambda function."; exit 1; }
 record_progress "CREATED_LAMBDA: Lambda function created successfully."
 
 echo "Waiting for Lambda function creation propagation..."
 sleep 5
 
 echo "Creating HTTP API..."
-execute_aws_cli api.json apigatewayv2 create-api --name my-http-api --protocol-type HTTP || { record_progress "ABORT: Failed to create HTTP API."; exit 1; }
+execute_aws_cli api.json apigatewayv2 create-api --name my-http-api --protocol-type HTTP --tags Key=Project,Value=my-simple-api || { record_progress "ABORT: Failed to create HTTP API."; exit 1; }
 record_progress "CREATED_API: HTTP API created successfully."
 
 # Get the API ID
@@ -57,7 +57,7 @@ execute_aws_cli route.json apigatewayv2 create-route --api-id $api_id --route-ke
 record_progress "CREATED_ROUTE: Route created successfully."
 
 echo "Creating stage..."
-execute_aws_cli stage.json apigatewayv2 create-stage --api-id $api_id --stage-name prod --auto-deploy || { record_progress "ABORT: Failed to create stage."; exit 1; }
+execute_aws_cli stage.json apigatewayv2 create-stage --api-id $api_id --stage-name prod --auto-deploy --tags Key=Project,Value=my-simple-api || { record_progress "ABORT: Failed to create stage."; exit 1; }
 record_progress "CREATED_STAGE: Stage created successfully."
 
 echo "Waiting for stage creation propagation..."
@@ -75,14 +75,14 @@ fi
 echo "Domain name: $domain_name"
 
 echo "Creating domain name..."
-execute_aws_cli domain_name.json apigatewayv2 create-domain-name --domain-name $domain_name --domain-name-configurations CertificateArn=$CERTIFICATE_ARN || { record_progress "ABORT: Failed to create domain name."; exit 1; }
+execute_aws_cli domain_name.json apigatewayv2 create-domain-name --domain-name $domain_name --domain-name-configurations CertificateArn=$CERTIFICATE_ARN --tags Key=Project,Value=my-simple-api || { record_progress "ABORT: Failed to create domain name."; exit 1; }
 record_progress "CREATED_DOMAIN_NAME: Domain name created successfully."
 
 echo "Waiting for domain name creation propagation..."
 sleep 5
 
 echo "Creating API mapping..."
-execute_aws_cli api_mapping.json apigatewayv2 create-api-mapping --api-id $api_id --domain-name $domain_name --stage prod || { record_progress "ABORT: Failed to create API mapping."; exit 1; }
+execute_aws_cli api_mapping.json apigatewayv2 create-api-mapping --api-id $api_id --domain-name $domain_name --stage prod --tags Key=Project,Value=my-simple-api || { record_progress "ABORT: Failed to create API mapping."; exit 1; }
 record_progress "CREATED_API_MAPPING: API mapping created successfully."
 
 echo "API Gateway endpoint: https://$domain_name/hello"
@@ -94,5 +94,8 @@ api_domain_name=$(jq -r '.DomainName' api_mapping.json)
 # Create Route53 record
 hosted_zone_id=$(aws route53 list-hosted-zones --query "HostedZones[?Name=='${domain_name}. '].Id" --output text)
 echo '{"Changes":[{"Action":"CREATE","ResourceRecordSet":{"Name":"pges2api.'${domain_name}'","Type":"CNAME","TTL":300,"ResourceRecords":[{"Value":"'${api_domain_name}'"}]}}]}' > change_batch.json
-execute_aws_cli route53_record.json route53 change-resource-record-sets --hosted-zone-id "$hosted_zone_id" --change-batch file://change_batch.json || { record_progress "ABORT: Failed to create Route53 record."; exit 1; }
+
+echo "Running: aws route53 change-resource-record-sets --hosted-zone-id $hosted_zone_id --change-batch file://change_batch.json"
+execute_aws_cli route53_record.json route53 change-resource-record-sets --hosted-zone-id "$hosted_zone_id" --change-batch file://change_batch.json --tags Key=Project,Value=my-simple-api || { record_progress "ABORT: Failed to create Route53 record."; exit 1; }
 record_progress "CREATED_ROUTE53_RECORD: Route53 record created successfully."
+rm change_batch.json
