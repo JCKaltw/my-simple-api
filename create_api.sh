@@ -46,7 +46,14 @@ record_progress "CREATED_API: HTTP API created successfully."
 api_id=$(jq -r '.ApiId' api.json)
 
 echo "Creating integration..."
-execute_aws_cli integration.json apigatewayv2 create-integration --api-id $api_id --integration-type AWS_PROXY --integration-uri arn:aws:apigateway:$REGION_NAME:lambda:path/2015-03-31/functions/$(jq -r '.FunctionArn' lambda.json)/invocations --payload-format-version 2.0 || { record_progress "ABORT: Failed to create integration."; exit 1; }
+execute_aws_cli integration.json apigatewayv2 create-integration \
+    --api-id $api_id \
+    --integration-type AWS_PROXY \
+    --integration-uri arn:aws:apigateway:$REGION_NAME:lambda:path/2015-03-31/functions/$(jq -r '.FunctionArn' lambda.json)/invocations \
+    --payload-format-version 2.0 || { 
+      record_progress "ABORT: Failed to create integration."; 
+      exit 1; 
+    }
 record_progress "CREATED_INTEGRATION: Integration created successfully."
 
 # Get the integration ID
