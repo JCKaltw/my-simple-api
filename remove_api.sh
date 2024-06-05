@@ -15,6 +15,14 @@ record_progress() {
   echo "$1" >> remove_api.sh.run-progress.txt
 }
 
+# Function to check if a variable is empty
+check_empty() {
+  if [ -z "$1" ]; then
+    echo "Error: $2 is empty."
+    exit 1
+  fi
+}
+
 # Get details from the created files
 api_id=$(jq -r '.ApiId' api.json)
 integration_id=$(jq -r '.IntegrationId' integration.json)
@@ -23,6 +31,14 @@ stage_name="prod"
 domain_name=$(jq -r '.DomainName' api_mapping.json)
 hosted_zone_id=$(aws route53 list-hosted-zones --query "HostedZones[?Name=='${domain_name}. '].Id" --output text)
 mapping_id=$(jq -r '.ApiMappingId' api_mapping.json)
+
+# Validate the retrieved variables
+check_empty "$api_id" "API ID"
+check_empty "$integration_id" "Integration ID"
+check_empty "$route_id" "Route ID"
+check_empty "$domain_name" "Domain Name"
+check_empty "$hosted_zone_id" "Hosted Zone ID"
+check_empty "$mapping_id" "Mapping ID"
 
 # Print a summary before deletion
 echo "API ID: $api_id"
